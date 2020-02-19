@@ -7,7 +7,15 @@ router.all('/*', (req, res, next) => {
 });
 
 router.get('/', (req, res) => {
-    res.render('admin/index');
+    res.send('IT WORKS');
+});
+
+router.get('/create', (req, res) => {
+    res.render('admin/posts/create');
+});
+
+router.post('/create', (req, res) => {
+    res.send('WORKED');
 });
 
 module.exports = router;
