@@ -1,6 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const Post = require('../../models/Post');
+const { isEmpty, uploadDir } = require('../../helpers/upload-helper')
+const fs = require('fs');
+const path = require('path');
 
 router.all('/*', (req, res, next) => {
     req.app.locals.layout = 'admin';
@@ -18,6 +21,17 @@ router.get('/create', (req, res) => {
 });
 
 router.post('/create', (req, res) => {
+    let filename = 'not-found.jpg';
+
+    if (!isEmpty(req.files)) {
+        let file = req.files.file;
+        filename = `${Date.now()}-${file.name}`;
+
+        file.mv(`./public/uploads/${filename}`, (err) => {
+            if (err) throw err;
+        });
+    }
+
     let allowComments = true;
     if (req.body.allowComments) {
         allowComments = true;
@@ -30,6 +44,7 @@ router.post('/create', (req, res) => {
         status: req.body.status,
         allowComments,
         body: req.body.body,
+        file: filename,
     });
 
     newPost.save().then(savedPost => {
@@ -40,6 +55,7 @@ router.post('/create', (req, res) => {
 
 router.get('/edit/:id', (req, res) => {
     Post.findOne({_id: req.params.id}).lean().then(post => {
+        console.log({post});
         res.render('admin/posts/edit', { post });
     });
 });
@@ -66,9 +82,12 @@ router.put('/edit/:id', (req, res) => {
 });
 
 router.delete('/:id', (req, res) => {
-    Post.remove({_id: req.params.id})
-        .then(result => {
-            res.redirect('/admin/posts');
+    Post.findOne({_id: req.params.id})
+        .then(post => {
+            fs.unlink(uploadDir + post.file, (err) => {
+                post.remove();
+                res.redirect('/admin/posts');
+            });
         });
 });
 
