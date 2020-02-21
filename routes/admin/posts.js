@@ -21,36 +21,45 @@ router.get('/create', (req, res) => {
 });
 
 router.post('/create', (req, res) => {
-    let filename = 'not-found.jpg';
+    let errors = [];
+    if (!req.body.title) errors.push({message: 'Please add a title'});
+    if (!req.body.status) errors.push({message: 'Please add a status'});
+    if (!req.body.body) errors.push({message: 'Please add a description'});
 
-    if (!isEmpty(req.files)) {
-        let file = req.files.file;
-        filename = `${Date.now()}-${file.name}`;
-
-        file.mv(`./public/uploads/${filename}`, (err) => {
-            if (err) throw err;
-        });
-    }
-
-    let allowComments = true;
-    if (req.body.allowComments) {
-        allowComments = true;
+    if (errors.length > 0) {
+        res.render('admin/posts/create', { errors })
     } else {
-        allowComments = false;
+        let filename = 'not-found.jpg';
+
+        if (!isEmpty(req.files)) {
+            let file = req.files.file;
+            filename = `${Date.now()}-${file.name}`;
+
+            file.mv(`./public/uploads/${filename}`, (err) => {
+                if (err) throw err;
+            });
+        }
+
+        let allowComments = true;
+        if (req.body.allowComments) {
+            allowComments = true;
+        } else {
+            allowComments = false;
+        }
+
+        const newPost = new Post({
+            title: req.body.title,
+            status: req.body.status,
+            allowComments,
+            body: req.body.body,
+            file: filename,
+        });
+
+        newPost.save().then(savedPost => {
+            console.log(savedPost);
+            res.redirect('/admin/posts');
+        }).catch(error => console.log('could not save post', error));
     }
-
-    const newPost = new Post({
-        title: req.body.title,
-        status: req.body.status,
-        allowComments,
-        body: req.body.body,
-        file: filename,
-    });
-
-    newPost.save().then(savedPost => {
-        console.log(savedPost);
-        res.redirect('/admin/posts');
-    }).catch(error => console.log('could not save post', error));
 });
 
 router.get('/edit/:id', (req, res) => {
