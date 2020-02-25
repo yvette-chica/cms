@@ -4,6 +4,8 @@ const Post =  require('../../models/Post');
 const Category =  require('../../models/Category');
 const User =  require('../../models/User');
 const bcrypt = require('bcryptjs');
+const passport = require('passport');
+const LocalStrategy = require('passport-local').Strategy;
 
 router.all('/*', (req, res, next) => {
     req.app.locals.layout = 'home';
@@ -26,8 +28,50 @@ router.get('/about', (req, res) => {
     res.render('home/about');
 });
 
+// Login
+
+passport.serializeUser(function(user, done) {
+    done(null, user);
+})
+passport.deserializeUser(function(id, done) {
+    User.findById(id, function(err, user) {
+        done(err, user);
+    }).lean();
+});
+
 router.get('/login', (req, res) => {
     res.render('home/login');
+});
+
+passport.use(new LocalStrategy({ usernameField: 'email' }, (email, password, done) => {
+    User.findOne({ email })
+        .lean()
+        .then(user => {
+            if (!user) return done(null, false, { message: 'No user found' });
+            
+            bcrypt.compare(password, user.password, (err, matched) => {
+                if (err) return err;
+                if (matched) {
+                    return done(null, user);
+                } else {
+                    return done(null, false, { message: 'Incorrect password' }); 
+                }
+            });
+        });
+}));
+
+router.post('/login', (req, res, next) => {
+    passport.authenticate('local', {
+        successRedirect: '/admin',
+        failureRedirect: '/login',
+        failureFlash: true,
+    })(req, res, next);
+});
+
+// Logout
+router.get('/logout', (req, res) => {
+    req.logOut();
+    res.redirect('/login');
 });
 
 router.get('/register', (req, res) => {
@@ -52,6 +96,7 @@ router.post('/register', (req, res) => {
         });
     } else {
         User.findOne({ email: req.body.email })
+            .lean()
             .then(user => {
                 if (!user) {
                     const newUser = new User({
