@@ -28,7 +28,11 @@ const PostSchema = new Schema({
     date: {
         type: Date,
         default: Date.now(),
-    }
-});
+    },
+    comments: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Comment',
+    }],
+}, { usePushEach: true });
  
 module.exports = mongoose.model('Post', PostSchema);
