@@ -127,6 +127,8 @@ router.post('/register', (req, res) => {
 router.get('/post/:id', (req, res) => {
     Post.findOne({ _id: req.params.id })
         .lean()
+        .populate({ path: 'comments', populate: { path: 'user', model: 'User' } })
+        .populate('author')
         .then(post => {
             Category.find({})
                 .lean()

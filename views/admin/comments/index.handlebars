@@ -5,6 +5,7 @@
         <tr>
             <th>Id</th>
             <th>Owner</th>
+            <th>Body</th>
             <th>Date</th>
         </tr>
     </thead>
@@ -13,6 +14,7 @@
             <tr>
                 <th scope="row">{{_id}}</th>
                 <td>{{user.firstName}}</td>
+                <td>{{body}}</td>
                 <td>{{generateTime date 'MMMM Do YYYY'}}</td>
                 <td>
                     <form

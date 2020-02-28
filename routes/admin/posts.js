@@ -20,6 +20,15 @@ router.get('/', (req, res) => {
         });
 });
 
+router.get('/my-posts', (req, res) => {
+    Post.find({ author: req.user._id })
+        .lean()
+        .populate('category')
+        .then(posts => {
+            res.render('admin/posts/my-posts', { posts });
+        });
+});
+
 router.get('/create', (req, res) => {
     Category.find({})
         .lean()
@@ -56,6 +65,7 @@ router.post('/create', (req, res) => {
         }
 
         const newPost = new Post({
+            author: req.user._id,
             title: req.body.title,
             status: req.body.status,
             allowComments,
@@ -91,6 +101,8 @@ router.put('/edit/:id', (req, res) => {
             } else {
                 allowComments = false;
             }
+
+            post.author = req.user._id;
             post.title = req.body.title;
             post.status = req.body.status;
             post.allowComments = allowComments;
@@ -109,18 +121,26 @@ router.put('/edit/:id', (req, res) => {
 
             post.save().then(updatedPost => {
                 req.flash('success_message', 'Post was successfully updated');
-                res.redirect('/admin/posts');
+                res.redirect('/admin/posts/my-posts');
             });
         });
 });
 
 router.delete('/:id', (req, res) => {
     Post.findOne({_id: req.params.id})
+        .populate('comments')
         .then(post => {
             fs.unlink(uploadDir + post.file, (err) => {
-                post.remove();
-                req.flash('success_message', 'Post was successfully deleted');
-                res.redirect('/admin/posts');
+                if (!post.comments.length < 1) {
+                    post.comments.forEach(comment => {
+                        comment.remove();
+                    });
+                }
+
+                post.remove().then(removedPost => {
+                    req.flash('success_message', 'Post was successfully deleted');
+                    res.redirect('/admin/posts/my-posts');
+                });
             });
         });
 });

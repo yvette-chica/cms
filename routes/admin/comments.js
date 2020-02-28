@@ -9,7 +9,8 @@ router.all('/*', (req, res, next) => {
 });
 
 router.get('/', (req, res) => {
-    Comment.find({})
+    // Only show comments from logged in user
+    Comment.find({ user: req.user._id })
         .lean()
         .populate('user')
         .then(comments => {
@@ -37,7 +38,14 @@ router.post('/', (req, res) => {
 router.delete('/:id', (req, res) => {
     Comment.deleteOne({ _id: req.params.id })
         .then(deletedItem => {
-            res.redirect('/admin/comments');
+            Post.findOneAndUpdate(
+                { comments: req.params.id },
+                { $pull: { comments: req.params.id } },
+                (err, data) => {
+                    if (err) console.log(err);
+                    res.redirect('/admin/comments');
+                }
+            )
         });
 });
 
