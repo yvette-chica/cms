@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
+const URLSlugs = require('mongoose-url-slugs');
 
 const PostSchema = new Schema({
     author: {
@@ -14,6 +15,9 @@ const PostSchema = new Schema({
         type: String,
         required: true,
     }, 
+    slug: {
+        type: String,
+    },
     status: {
         type: String,
         default: 'public',
@@ -38,5 +42,7 @@ const PostSchema = new Schema({
         ref: 'Comment',
     }],
 }, { usePushEach: true });
+
+PostSchema.plugin(URLSlugs('title', { field: 'slug' }));
  
 module.exports = mongoose.model('Post', PostSchema);
