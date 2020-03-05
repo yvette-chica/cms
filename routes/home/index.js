@@ -13,14 +13,26 @@ router.all('/*', (req, res, next) => {
 });
 
 router.get('/', (req, res) => {
+    const perPage = 10;
+    const page = req.query.page || 1;
+
     Post.find({})
         .lean()
+        .skip((perPage * page) - perPage)
+        .limit(perPage)
         .then(posts => {
-            Category.find({})
-                .lean()
-                .then(categories => {
-                    res.render('home/index', { posts, categories });
-                });
+            Post.countDocuments().then(postCount => {
+                Category.find({})
+                    .lean()
+                    .then(categories => {
+                        res.render('home/index', {
+                            posts,
+                            categories,
+                            current: parseInt(page),
+                            pages: Math.ceil(postCount / perPage),
+                        });
+                    });
+            });
         });
 });
 
