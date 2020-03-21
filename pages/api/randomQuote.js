@@ -4,8 +4,6 @@ export default (req, res) => {
   const { author } = req.query;
   let quotes = allQuotes;
 
-  console.log('author', author);
-  console.log('quotes`', quotes);
   if (author) {
     quotes = quotes.filter(quote => quote.author.toLowerCase().includes(author.toLowerCase()));
   }

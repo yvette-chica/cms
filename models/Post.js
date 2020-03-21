@@ -2,7 +2,9 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 const URLSlugs = require('mongoose-url-slugs');
 
-const PostSchema = new Schema({
+let PostSchema = null;
+
+const tempSchema = new Schema({
     author: {
         type: Schema.Types.ObjectId,
         ref: 'User',
@@ -43,6 +45,14 @@ const PostSchema = new Schema({
     }],
 }, { usePushEach: true });
 
-PostSchema.plugin(URLSlugs('title', { field: 'slug' }));
+tempSchema.plugin(URLSlugs('title', { field: 'slug' }));
+
+// This avoids HMR trying to overwrite the model after compilation
+try {
+    PostSchema = mongoose.model('Post', tempSchema);
+} catch (e) {
+    PostSchema = mongoose.model('Post');
+}
+
  
-module.exports = mongoose.model('Post', PostSchema);
+module.exports = PostSchema;

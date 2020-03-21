@@ -1,7 +1,9 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-const UserSchema = new Schema({
+let UserSchema = null;
+
+const tempSchema = new Schema({
     firstName: {
         type: String,
         required: true,
@@ -20,8 +22,15 @@ const UserSchema = new Schema({
     }
 });
 
-UserSchema.methods.testMethod = function() {
+tempSchema.methods.testMethod = function() {
     console.log('using schema methods');
 };
 
-module.exports = mongoose.model('User', UserSchema);
+// This avoids HMR trying to overwrite the model after compilation
+try {
+    UserSchema = mongoose.model('User', tempSchema);
+} catch (e) {
+    UserSchema = mongoose.model('User');
+}
+
+module.exports = UserSchema;
