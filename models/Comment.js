@@ -1,7 +1,9 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-const CommentSchema = new Schema({
+let CommentSchema;
+
+const tempSchema = new Schema({
     user: {
         type: Schema.Types.ObjectId,
         ref: 'User',
@@ -20,4 +22,11 @@ const CommentSchema = new Schema({
     },
 });
 
-module.exports = mongoose.model('Comment', CommentSchema);
+// This avoids HMR trying to overwrite the model after compilation
+try {
+    CommentSchema = mongoose.model('Comment', tempSchema);
+} catch (e) {
+    CommentSchema = mongoose.model('Comment');
+}
+
+module.exports = CommentSchema;
