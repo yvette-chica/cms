@@ -14,8 +14,7 @@ function Blog({router}) {
         '/api/posts/index',
         fetcher
     );
-    console.log('data', data);
-    console.log({router});
+
     if (!data) return <Layout>No data</Layout>
 
     return (
