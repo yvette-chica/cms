@@ -1,11 +1,11 @@
 import { withRouter } from 'next/router'; 
 import Link from 'next/link';
-import Layout from '../../components/MainLayout';
-import Sidebar from '../../components/Sidebar';
-import fetcher from '../../helpers/fetcher';
 import useSWR from 'swr';
 import { Card, Row, Col, Button } from 'antd';
 import { ArrowRightOutlined } from '@ant-design/icons';
+import Layout from '../../components/Layout';
+import Sidebar from '../../components/Sidebar';
+import fetcher from '../../helpers/fetcher';
 
 const { Meta } = Card;
 
